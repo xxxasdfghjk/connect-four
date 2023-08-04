@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import ConnectFour, { Empty, Red, Yellow } from "./lib/connectFour";
 import { Button, Modal, ModalContent, ModalOverlay, Text, useDisclosure, useToast } from "@chakra-ui/react";
+import ConnectFourComputer from "./lib/ConnectFourComputer";
 type ConnectFourProps = {
     boardWidth: number;
     boardHeight: number;
@@ -17,6 +18,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
     const [targetCell, setTargetCell] = useState<{ x: number; y: number } | undefined>();
     const [gameMessage, setGameMessage] = useState<string>();
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [playerColor, setPlayerColor] = useState(2);
     const ContinueButton = (
         <Button
             colorScheme="blue"
@@ -44,6 +46,48 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
         </Modal>
     );
     const toast = useToast();
+
+    const placeStone = (x: number) => {
+        const res = connectFourInstance.placeStone(connectFourInstance.getTurnPlayer(), x);
+        console.log("called");
+        if (res === false) {
+            toast({
+                title: "Invaild Action",
+                description: "Please place valiable space.",
+                status: "error",
+                duration: 1000,
+                isClosable: true,
+            });
+            return;
+        }
+        setBoard(connectFourInstance.getBoard().reverse());
+        setTargetCell(undefined);
+        if (res === 2) {
+            setGameState("Finish");
+            setGameMessage("Won By Red !");
+            onOpen();
+        } else if (res === 1) {
+            setGameState("Finish");
+            setGameMessage("Won By Yellow !");
+            onOpen();
+        } else if (res === 3) {
+            setGameState("Finish");
+            setGameMessage("Draw !");
+            onOpen();
+        } else {
+            connectFourInstance.changeTurn();
+            setGameMessage(`${connectFourInstance.getTurnPlayer() === 1 ? "Yellow" : "Red"} Turn`);
+            if (connectFourInstance.getTurnPlayer() === 1) {
+                const nextPlace = ConnectFourComputer.calcNext(
+                    JSON.parse(JSON.stringify(connectFourInstance.getBoard())),
+                    1,
+                    props.boardWidth,
+                    props.boardHeight
+                );
+                placeStone(nextPlace);
+            }
+        }
+    };
     const GameComponent = (
         <div>
             <div className="board">
@@ -71,39 +115,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
                                     if (gameState !== "Playing") {
                                         return;
                                     }
-                                    const res = connectFourInstance.placeStone(connectFourInstance.getTurnPlayer(), x);
-                                    connectFourInstance.printBoard();
-                                    if (res === false) {
-                                        toast({
-                                            title: "Invaild Action",
-                                            description: "Please place valiable space.",
-                                            status: "error",
-                                            duration: 1000,
-                                            isClosable: true,
-                                        });
-                                        return;
-                                    }
-                                    setBoard(connectFourInstance.getBoard().reverse());
-                                    setTargetCell(undefined);
-
-                                    if (res === 2) {
-                                        setGameState("Finish");
-                                        setGameMessage("Won By Red !");
-                                        onOpen();
-                                    } else if (res === 1) {
-                                        setGameState("Finish");
-                                        setGameMessage("Won By Yellow !");
-                                        onOpen();
-                                    } else if (res === 3) {
-                                        setGameState("Finish");
-                                        setGameMessage("Draw !");
-                                        onOpen();
-                                    } else {
-                                        connectFourInstance.changeTurn();
-                                        setGameMessage(
-                                            `${connectFourInstance.getTurnPlayer() === 1 ? "Yellow" : "Red"} Turn`
-                                        );
-                                    }
+                                    placeStone(x);
                                 }}
                             >
                                 <div className="cell_content"></div>
@@ -119,7 +131,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
     );
 
     return gameState === "BeforeStart" ? (
-        <div>
+        <div className="start_button_wrapper">
             <Button onClick={() => setGameState("Playing")}>{"Start Game!"}</Button>
         </div>
     ) : gameState === "Playing" ? (
