@@ -5,6 +5,7 @@ export type Draw = 3;
 export type Unfinished = 4;
 export type BoardCellStatus = Yellow | Red | Empty;
 export type Winner = Yellow | Red | Draw;
+export type Boards = Array<Array<Yellow | Red | Empty>>;
 class ConnectFour {
     private boards: Array<Array<Yellow | Red | Empty>>;
     private boardWidth: number;
@@ -32,7 +33,21 @@ class ConnectFour {
         return this.turnPlayer;
     }
 
+    public static isPlaceableStone(boards: Array<Array<Yellow | Red | Empty>>, x: number, boardWidth: number) {
+        if (boardWidth === undefined) {
+            return false;
+        }
+        if (boardWidth - 1 < x) {
+            return false;
+        }
+        return boards.some((e) => e[x] === ConnectFour.Empty);
+    }
+
     isPlaceableStone(x: number) {
+        if (this?.boardWidth === undefined) {
+            return false;
+        }
+        console.log(this.boardWidth);
         if (this.boardWidth - 1 < x) {
             return false;
         }
@@ -48,6 +63,22 @@ class ConnectFour {
         this.turnPlayer = ConnectFour.Red;
     }
 
+    public static placeStone(
+        boards: Array<Array<Yellow | Red | Empty>>,
+        color: Exclude<BoardCellStatus, Empty>,
+        boardWidth: number,
+        boardHeight: number,
+        x: number
+    ) {
+        if (ConnectFour.isPlaceableStone(boards, x, boardWidth)) {
+            boards.find((e) => e[x] === ConnectFour.Empty)![x] = color;
+
+            return ConnectFour.isFinish(boards, boardHeight, boardWidth);
+        } else {
+            return false;
+        }
+    }
+
     placeStone(color: Exclude<BoardCellStatus, Empty>, x: number): Winner | Unfinished | false {
         if (this.isPlaceableStone(x)) {
             this.boards.find((e) => e[x] === ConnectFour.Empty)![x] = color;
@@ -58,6 +89,68 @@ class ConnectFour {
     }
     getBoard() {
         return [...this.boards];
+    }
+
+    public static isFinish(boards: Array<Array<Yellow | Red | Empty>>, boardHeight: number, boardWidth: number) {
+        if (boards.filter((e) => e.every((ee) => ee !== ConnectFour.Empty)).length === boardHeight) {
+            return 3;
+        }
+        // 横方向を調べる
+        for (let y = 0; y < boardHeight; y++) {
+            for (let x = 0; x < boardWidth - 3; x++) {
+                if (
+                    boards[y][x] === boards[y][x + 1] &&
+                    boards[y][x + 1] === boards[y][x + 2] &&
+                    boards[y][x + 2] === boards[y][x + 3] &&
+                    boards[y][x] !== ConnectFour.Empty
+                ) {
+                    return boards[y][x] as Red | Yellow;
+                }
+            }
+        }
+
+        //  縦方向を調べる
+        for (let y = 0; y < boardHeight - 3; y++) {
+            for (let x = 0; x < boardWidth; x++) {
+                if (
+                    boards[y][x] === boards[y + 1][x] &&
+                    boards[y + 1][x] === boards[y + 2][x] &&
+                    boards[y + 2][x] === boards[y + 3][x] &&
+                    boards[y][x] !== ConnectFour.Empty
+                ) {
+                    return boards[y][x] as Red | Yellow;
+                }
+            }
+        }
+
+        //  右斜上方向を調べる
+        for (let y = 0; y < boardHeight - 3; y++) {
+            for (let x = 0; x < boardWidth - 3; x++) {
+                if (
+                    boards[y][x] === boards[y + 1][x + 1] &&
+                    boards[y + 1][x + 1] === boards[y + 2][x + 2] &&
+                    boards[y + 2][x + 2] === boards[y + 3][x + 3] &&
+                    boards[y][x] !== ConnectFour.Empty
+                ) {
+                    return boards[y][x] as Red | Yellow;
+                }
+            }
+        }
+
+        //  左斜上方向を調べる
+        for (let y = 0; y < boardHeight - 3; y++) {
+            for (let x = 4; x < boardWidth; x++) {
+                if (
+                    boards[y][x] === boards[y + 1][x - 1] &&
+                    boards[y + 1][x - 1] === boards[y + 2][x - 2] &&
+                    boards[y + 2][x - 2] === boards[y + 3][x - 3] &&
+                    boards[y][x] !== ConnectFour.Empty
+                ) {
+                    return boards[y][x] as Red | Yellow;
+                }
+            }
+        }
+        return 4;
     }
 
     isFinish(): Winner | Unfinished {
@@ -124,6 +217,41 @@ class ConnectFour {
     printBoard() {
         [...this.boards].reverse().forEach((e: Array<Yellow | Empty | Red>) => console.log(e.join(" ")));
         console.log(this.boards);
+    }
+
+    availableActions() {
+        return Array(this.boardWidth)
+            .fill(0)
+            .map((_, i) => i)
+            .map((x) => this.isPlaceableStone(x))
+            .reduce<number[]>((prev, cur, index) => (cur ? [...prev, index] : prev), []);
+    }
+
+    public static availableActions(boards: Array<Array<Yellow | Red | Empty>>, width: number) {
+        return Array(width)
+            .fill(0)
+            .map((_, i) => i)
+            .map((x) => boards.some((e) => e[x] === ConnectFour.Empty))
+            .reduce<number[]>((prev, cur, index) => (cur ? [...prev, index] : prev), []);
+    }
+
+    public static isWinable(
+        boards: Array<Array<Yellow | Red | Empty>>,
+        color: Yellow | Red,
+        width: number,
+        height: number
+    ) {
+        const placeable = ConnectFour.availableActions(boards, width);
+        for (const cur of placeable) {
+            const copy = JSON.parse(JSON.stringify(boards));
+            const res = ConnectFour.placeStone(copy, color, width, height, cur);
+            if (res === color) {
+                console.log(boards);
+                console.log(color);
+                return true;
+            }
+        }
+        return false;
     }
 }
 
