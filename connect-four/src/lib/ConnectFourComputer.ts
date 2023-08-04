@@ -44,7 +44,6 @@ class ConnectFourComputer {
                 }
             }
         }
-        console.log(rate);
         return parseInt(Object.entries(rate).sort(([_a1, a2], [_b1, b2]) => b2 - a2)[0][0], 10);
     }
 

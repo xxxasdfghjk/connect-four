@@ -47,7 +47,6 @@ class ConnectFour {
         if (this?.boardWidth === undefined) {
             return false;
         }
-        console.log(this.boardWidth);
         if (this.boardWidth - 1 < x) {
             return false;
         }
@@ -246,8 +245,6 @@ class ConnectFour {
             const copy = JSON.parse(JSON.stringify(boards));
             const res = ConnectFour.placeStone(copy, color, width, height, cur);
             if (res === color) {
-                console.log(boards);
-                console.log(color);
                 return true;
             }
         }
