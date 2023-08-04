@@ -1,7 +1,10 @@
 export type Yellow = 1;
 export type Red = 2;
 export type Empty = 0;
+export type Draw = 3;
+export type Unfinished = 4;
 export type BoardCellStatus = Yellow | Red | Empty;
+export type Winner = Yellow | Red | Draw;
 class ConnectFour {
     private boards: Array<Array<Yellow | Red | Empty>>;
     private boardWidth: number;
@@ -45,10 +48,10 @@ class ConnectFour {
         this.turnPlayer = ConnectFour.Red;
     }
 
-    placeStone(color: Exclude<BoardCellStatus, Empty>, x: number) {
+    placeStone(color: Exclude<BoardCellStatus, Empty>, x: number): Winner | Unfinished | false {
         if (this.isPlaceableStone(x)) {
             this.boards.find((e) => e[x] === ConnectFour.Empty)![x] = color;
-            return true;
+            return this.isFinish();
         } else {
             return false;
         }
@@ -57,15 +60,17 @@ class ConnectFour {
         return [...this.boards];
     }
 
-    isFinish(): Red | Yellow | false {
+    isFinish(): Winner | Unfinished {
+        if (this.boards.filter((e) => e.every((ee) => ee !== ConnectFour.Empty)).length === this.boardHeight) {
+            return 3;
+        }
         // 横方向を調べる
         for (let y = 0; y < this.boardHeight; y++) {
-            for (let x = 0; x < this.boardWidth - 4; x++) {
+            for (let x = 0; x < this.boardWidth - 3; x++) {
                 if (
                     this.boards[y][x] === this.boards[y][x + 1] &&
                     this.boards[y][x + 1] === this.boards[y][x + 2] &&
                     this.boards[y][x + 2] === this.boards[y][x + 3] &&
-                    this.boards[y][x + 3] === this.boards[y][x + 4] &&
                     this.boards[y][x] !== ConnectFour.Empty
                 ) {
                     return this.boards[y][x] as Red | Yellow;
@@ -74,13 +79,12 @@ class ConnectFour {
         }
 
         //  縦方向を調べる
-        for (let y = 0; y < this.boardHeight; y++) {
-            for (let x = 0; x < this.boardWidth - 4; x++) {
+        for (let y = 0; y < this.boardHeight - 3; y++) {
+            for (let x = 0; x < this.boardWidth; x++) {
                 if (
                     this.boards[y][x] === this.boards[y + 1][x] &&
                     this.boards[y + 1][x] === this.boards[y + 2][x] &&
                     this.boards[y + 2][x] === this.boards[y + 3][x] &&
-                    this.boards[y + 3][x] === this.boards[y + 4][x] &&
                     this.boards[y][x] !== ConnectFour.Empty
                 ) {
                     return this.boards[y][x] as Red | Yellow;
@@ -89,13 +93,12 @@ class ConnectFour {
         }
 
         //  右斜上方向を調べる
-        for (let y = 0; y < this.boardHeight - 4; y++) {
-            for (let x = 0; x < this.boardWidth - 4; x++) {
+        for (let y = 0; y < this.boardHeight - 3; y++) {
+            for (let x = 0; x < this.boardWidth - 3; x++) {
                 if (
                     this.boards[y][x] === this.boards[y + 1][x + 1] &&
                     this.boards[y + 1][x + 1] === this.boards[y + 2][x + 2] &&
                     this.boards[y + 2][x + 2] === this.boards[y + 3][x + 3] &&
-                    this.boards[y + 3][x + 3] === this.boards[y + 4][x + 4] &&
                     this.boards[y][x] !== ConnectFour.Empty
                 ) {
                     return this.boards[y][x] as Red | Yellow;
@@ -104,20 +107,19 @@ class ConnectFour {
         }
 
         //  左斜上方向を調べる
-        for (let y = 0; y < this.boardHeight - 4; y++) {
+        for (let y = 0; y < this.boardHeight - 3; y++) {
             for (let x = 4; x < this.boardWidth; x++) {
                 if (
                     this.boards[y][x] === this.boards[y + 1][x - 1] &&
                     this.boards[y + 1][x - 1] === this.boards[y + 2][x - 2] &&
                     this.boards[y + 2][x - 2] === this.boards[y + 3][x - 3] &&
-                    this.boards[y + 3][x - 3] === this.boards[y + 4][x - 4] &&
                     this.boards[y][x] !== ConnectFour.Empty
                 ) {
                     return this.boards[y][x] as Red | Yellow;
                 }
             }
         }
-        return false;
+        return 4;
     }
     printBoard() {
         [...this.boards].reverse().forEach((e: Array<Yellow | Empty | Red>) => console.log(e.join(" ")));
