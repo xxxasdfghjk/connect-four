@@ -49,7 +49,6 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
 
     const placeStone = (x: number) => {
         const res = connectFourInstance.placeStone(connectFourInstance.getTurnPlayer(), x);
-        console.log("called");
         if (res === false) {
             toast({
                 title: "Invaild Action",
