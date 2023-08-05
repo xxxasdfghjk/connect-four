@@ -53,10 +53,15 @@ body {
     font-size: 40px;
 }
 
-.target_cell > .cell_content {
-    background-color: rgb(166, 164, 182);
+.target_cell_red > .cell_content {
+    background-color: rgb(220, 181, 184);
     border-radius: 50%; /*角丸*/
 }
+.target_cell_yellow > .cell_content {
+    background-color: rgb(233, 232, 188);
+    border-radius: 50%; /*角丸*/
+}
+
 .text_content {
     margin: 0 auto;
     width: 80%;
@@ -65,4 +70,5 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 40px;
 }
