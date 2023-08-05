@@ -19,7 +19,7 @@ class ConnectFour {
         this.boardWidth = boardWidth;
         this.boards = [[]];
         this.initialize(boardWidth, boardHeight);
-        this.turnPlayer = ConnectFour.Red;
+        this.turnPlayer = ConnectFour.Yellow;
     }
 
     changeTurn() {
@@ -59,7 +59,7 @@ class ConnectFour {
             array[y] = new Array(boardWidth).fill(ConnectFour.Empty);
         }
         this.boards = array;
-        this.turnPlayer = ConnectFour.Red;
+        this.turnPlayer = ConnectFour.Yellow;
     }
 
     public static placeStone(
