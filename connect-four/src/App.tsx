@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import "./App.css";
-import ConnectFour, { Empty, Red, Yellow } from "./lib/connectFour";
+import ConnectFour, { Board, Empty, Red, Yellow } from "./lib/connectFour";
 import { Button, Modal, ModalContent, ModalOverlay, Spinner, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import ConnectFourComputer from "./lib/ConnectFourComputer";
 type ConnectFourProps = {
@@ -11,8 +11,8 @@ type GameState = "Playing" | "BeforeStart" | "Finish";
 
 const ConnectFourBoards = (props: ConnectFourProps) => {
     const [connectFourInstance] = useState(new ConnectFour(props.boardWidth, props.boardHeight));
-    const [board, setBoard] = useState<Array<Array<Yellow | Empty | Red>>>(
-        new Array(props.boardHeight).fill(new Array(props.boardWidth).fill(ConnectFour.Empty)) as Array<Array<Empty>>
+    const [board, setBoard] = useState<Board>(
+        new Array(props.boardHeight * props.boardWidth).fill(ConnectFour.Empty) as Array<Empty>
     );
     const [gameState, setGameState] = useState<GameState>("BeforeStart");
     const [targetCell, setTargetCell] = useState<{ x: number; y: number } | undefined>();
@@ -63,7 +63,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
         setCpuThinking(true);
         setTimeout(() => {
             const nextPlace = ConnectFourComputer.calcNext(
-                JSON.parse(JSON.stringify(connectFourInstance.getBoard())),
+                [...connectFourInstance.getBoard()],
                 playerColorRef.current === 1 ? 2 : 1,
                 props.boardWidth,
                 props.boardHeight
@@ -94,7 +94,6 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
                     onClick={() => {
                         setPlayerColor(2);
                         playerColorRef.current = 2;
-
                         initAndStartGame();
                         orderSelectModalOnClose();
                         placeCPU();
@@ -120,7 +119,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
             });
             return;
         }
-        setBoard(connectFourInstance.getBoard().reverse());
+        setBoard(connectFourInstance.getBoard());
         setTargetCell(undefined);
         if (res === 1 || res === 2 || res === 3) {
             setGameState("Finish");
@@ -129,49 +128,60 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
         } else {
             connectFourInstance.changeTurn();
             setGameMessage(`${connectFourInstance.getTurnPlayer() === 1 ? "Yellow" : "Red"} Turn`);
-
             placeCPU();
         }
     };
     const GameComponent = (
         <div>
             <div className="board">
-                {board.map((e, y) => (
-                    <div className="row" key={y}>
-                        {e.map((ee, x) => (
-                            <div
-                                key={x}
-                                className={`cell ${
-                                    targetCell?.x === x && targetCell.y === y
-                                        ? `target_cell_${connectFourInstance.getTurnPlayer() === 2 ? "red" : "yellow"}`
-                                        : ConnectFour.Empty === ee
-                                        ? "empty"
-                                        : ee === ConnectFour.Red
-                                        ? "red"
-                                        : "yellow"
-                                }`}
-                                onMouseEnter={() => {
-                                    const y = [...board].reverse().findIndex((row) => row[x] === ConnectFour.Empty);
-                                    setTargetCell(y !== undefined ? { x, y: props.boardHeight - 1 - y } : undefined);
-                                }}
-                                onMouseLeave={() => {
-                                    setTargetCell(undefined);
-                                }}
-                                onClick={() => {
-                                    if (
-                                        gameState !== "Playing" ||
-                                        playerColorRef.current !== connectFourInstance.getTurnPlayer()
-                                    ) {
-                                        return;
-                                    }
-                                    placeStone(x);
-                                }}
-                            >
-                                <div className="cell_content"></div>
-                            </div>
-                        ))}
-                    </div>
-                ))}
+                {board
+                    .flatMap((_, i, a) => (i % props.boardWidth ? [] : [a.slice(i, i + props.boardWidth)]))
+                    .reverse()
+                    .map((e, y) => (
+                        <div className="row" key={y}>
+                            {e.map((ee, x) => (
+                                <div
+                                    key={x}
+                                    className={`cell ${
+                                        targetCell?.x === x && targetCell.y === y
+                                            ? `target_cell_${
+                                                  connectFourInstance.getTurnPlayer() === 2 ? "red" : "yellow"
+                                              }`
+                                            : ConnectFour.Empty === ee
+                                            ? "empty"
+                                            : ee === ConnectFour.Red
+                                            ? "red"
+                                            : "yellow"
+                                    }`}
+                                    onMouseEnter={() => {
+                                        if (connectFourInstance.getTurnPlayer() !== playerColorRef.current) {
+                                            return;
+                                        }
+                                        const y = [...board]
+                                            .filter((_, i) => i % props.boardWidth === x)
+                                            .findIndex((v) => v === ConnectFour.Empty);
+                                        setTargetCell(
+                                            y !== undefined ? { x, y: props.boardHeight - 1 - y } : undefined
+                                        );
+                                    }}
+                                    onMouseLeave={() => {
+                                        setTargetCell(undefined);
+                                    }}
+                                    onClick={() => {
+                                        if (
+                                            gameState !== "Playing" ||
+                                            playerColorRef.current !== connectFourInstance.getTurnPlayer()
+                                        ) {
+                                            return;
+                                        }
+                                        placeStone(x);
+                                    }}
+                                >
+                                    <div className="cell_content"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
             </div>
             <div className="text_content">
                 <Text fontSize={"3xl"}>{gameMessage}</Text>
