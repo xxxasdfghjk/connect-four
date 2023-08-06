@@ -1,14 +1,14 @@
-import ConnectFour, { Yellow, Red, Empty, Boards } from "./connectFour";
+import ConnectFour, { Yellow, Red, Board } from "./connectFour";
 
 class ConnectFourComputer {
     private static examNum = 2000;
-    public static calcNext(board: Boards, myColor: Yellow | Red, width: number, height: number) {
+    public static calcNext(board: Board, myColor: Yellow | Red, width: number, height: number) {
         const actions = ConnectFour.availableActions(board, width);
         const rate = actions.reduce<{ [key: number]: number }>((prev, cur) => ({ ...prev, [cur]: 0 }), {});
         const opponentColor = myColor === 1 ? 2 : 1;
         for (const cur of actions) {
             for (let i = 0; i < ConnectFourComputer.examNum; i++) {
-                let examBoard = JSON.parse(JSON.stringify(board));
+                let examBoard = [...board];
                 const res = ConnectFour.placeStone(examBoard, myColor, width, height, cur);
                 if (res === myColor) {
                     rate[cur] += 1;
@@ -44,10 +44,11 @@ class ConnectFourComputer {
                 }
             }
         }
+
         return parseInt(Object.entries(rate).sort(([_a1, a2], [_b1, b2]) => b2 - a2)[0][0], 10);
     }
 
-    public static randomPut(board: Boards, color: Yellow | Red, width: number, height: number) {
+    public static randomPut(board: Board, color: Yellow | Red, width: number, height: number) {
         const availableAction = ConnectFour.availableActions(board, width);
         return ConnectFour.placeStone(
             board,
