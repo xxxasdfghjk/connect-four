@@ -63,7 +63,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
         setCpuThinking(true);
         setTimeout(() => {
             const nextPlace = ConnectFourComputer.calcNext(
-                JSON.parse(JSON.stringify(connectFourInstance.getBoard())),
+                [...connectFourInstance.getBoard()],
                 playerColorRef.current === 1 ? 2 : 1,
                 props.boardWidth,
                 props.boardHeight
