@@ -62,7 +62,7 @@ const ConnectFourBoards = (props: ConnectFourProps) => {
         }
         setCpuThinking(true);
         setTimeout(() => {
-            const nextPlace = ConnectFourComputer.calcNext(
+            const nextPlace = ConnectFourComputer.calcNextByMonteCarloTreeSearch(
                 [...connectFourInstance.getBoard()],
                 playerColorRef.current === 1 ? 2 : 1,
                 props.boardWidth,
