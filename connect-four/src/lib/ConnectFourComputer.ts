@@ -147,7 +147,7 @@ class ConnectFourComputer {
         nodes
             .sort((a, b) => b.getPoint() / b.getNodeTryCount() - a.getPoint() / a.getNodeTryCount())
             .forEach((n) => console.log(n.getPoint() / n.getNodeTryCount(), n.key));
-
+        console.log("Tree Size : " + monteCalroTree.getTreeSize());
         return nodes.sort((a, b) => b.getPoint() / b.getNodeTryCount() - a.getPoint() / a.getNodeTryCount())[0].key;
     }
 

@@ -18,6 +18,29 @@ export class MonteCalroTree<T> {
     getRootNode() {
         return this.rootNode;
     }
+    reduceTreeInOrder(func: (node: MonteCalroTreeNode<T>) => void) {
+        return MonteCalroTree.reduceTreeInOrderRecursive<T>(this.rootNode, func);
+    }
+    public static reduceTreeInOrderRecursive<T>(
+        node: MonteCalroTreeNode<T>,
+        func: (node: MonteCalroTreeNode<T>) => void
+    ) {
+        func(node);
+        for (const child of node.getChildren()) {
+            MonteCalroTree.reduceTreeInOrderRecursive<T>(child, func);
+        }
+    }
+    getTreeSize() {
+        return this.getTreeSizeRecursive(this.getRootNode());
+    }
+    getTreeSizeRecursive(node: MonteCalroTreeNode<T>) {
+        if (node.children.length === 0) return 1;
+        let sum = 0;
+        for (const child of node.getChildren()) {
+            sum += this.getTreeSizeRecursive(child);
+        }
+        return 1 + sum;
+    }
 
     public static calcUCT(totalTryCount: number, nodeTryCount: number, gotPoints: number) {
         return gotPoints / nodeTryCount + Math.SQRT2 * Math.sqrt(Math.log(totalTryCount / nodeTryCount));
