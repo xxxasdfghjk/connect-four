@@ -250,6 +250,15 @@ class ConnectFour {
         }
         return false;
     }
+    public static printBoard(board: Board, width: number, height: number) {
+        console.log("======");
+
+        board
+            .flatMap((v, i) => (i % width === 0 ? [board.slice(i, i + width)] : []))
+            .reverse()
+            .forEach((e) => console.log(e));
+        console.log("======");
+    }
 }
 
 export default ConnectFour;
